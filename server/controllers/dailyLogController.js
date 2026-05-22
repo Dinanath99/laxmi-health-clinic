@@ -1,8 +1,40 @@
 const { DailyLog } = require('../models');
 
+exports.getPharmacies = async (req, res) => {
+  try {
+    const list = await DailyLog.distinct("pharmacyName");
+    res.json(list.filter(Boolean));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.renamePharmacy = async (req, res) => {
+  try {
+    const { oldName } = req.params;
+    const { newName } = req.body;
+    if (!newName) return res.status(400).json({ error: 'New name required' });
+    await DailyLog.updateMany({ pharmacyName: oldName }, { $set: { pharmacyName: newName } });
+    res.json({ message: 'Pharmacy renamed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deletePharmacy = async (req, res) => {
+  try {
+    const { name } = req.params;
+    await DailyLog.deleteMany({ pharmacyName: name });
+    res.json({ message: 'Pharmacy branch and all associated logs deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.getDailyLogs = async (req, res) => {
   try {
-    const logs = await DailyLog.find().sort({ date: 1 }); // Sort chronologically to compute running totals accurately
+    const query = req.query.pharmacyName ? { pharmacyName: req.query.pharmacyName } : {};
+    const logs = await DailyLog.find(query).sort({ date: 1 });
     res.json(logs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -11,16 +43,19 @@ exports.getDailyLogs = async (req, res) => {
 
 exports.addDailyLog = async (req, res) => {
   try {
-    const { date, income, expense, notes } = req.body;
+    const { date, income, expense, notes, pharmacyName } = req.body;
+    const finalPharmacyName = pharmacyName || 'Main Pharmacy';
     
-    // Calculate running total
-    // Find the logically preceding log entry to get its total
-    const previousLogs = await DailyLog.find({ date: { $lt: new Date(date) } }).sort({ date: -1 }).limit(1);
+    const previousLogs = await DailyLog.find({ 
+       pharmacyName: finalPharmacyName, 
+       date: { $lt: new Date(date) } 
+    }).sort({ date: -1 }).limit(1);
+    
     const previousTotal = previousLogs.length > 0 ? previousLogs[0].total : 0;
-    
     const newTotal = previousTotal + Number(income) - Number(expense);
 
     const log = new DailyLog({
+      pharmacyName: finalPharmacyName,
       date,
       income,
       expense,

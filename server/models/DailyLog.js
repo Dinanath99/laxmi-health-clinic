@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const dailyLogSchema = new mongoose.Schema(
   {
+    pharmacyName: {
+      type: String,
+      required: true,
+      default: "Main Pharmacy",
+      index: true,
+    },
     date: { type: Date, required: true, index: true },
     income: { type: Number, default: 0 },
     expense: { type: Number, default: 0 },
