@@ -43,12 +43,15 @@ exports.getSupplierLedger = async (req, res) => {
 exports.addSupplierTransaction = async (req, res) => {
   try {
     const { id } = req.params;
-    const { date, type, description, debit, credit, notes } = req.body;
+    const { date, type, description, debit, credit, notes, openingBalance } = req.body;
     
-    // Find previous balance to calculate running balance
-    // Using simple approach: Debit adds to balance due, credit reduces it
-    const previousLogs = await SupplierTransaction.find({ supplierId: id, date: { $lt: new Date(date) } }).sort({ date: -1 }).limit(1);
-    const previousBalance = previousLogs.length > 0 ? previousLogs[0].balance : 0;
+    let previousBalance = 0;
+    if (openingBalance !== undefined && openingBalance !== '' && openingBalance !== null) {
+      previousBalance = Number(openingBalance);
+    } else {
+      const previousLogs = await SupplierTransaction.find({ supplierId: id, date: { $lt: new Date(date) } }).sort({ date: -1 }).limit(1);
+      previousBalance = previousLogs.length > 0 ? previousLogs[0].balance : 0;
+    }
     
     const numDebit = Number(debit) || 0;
     const numCredit = Number(credit) || 0;
@@ -61,6 +64,7 @@ exports.addSupplierTransaction = async (req, res) => {
       description,
       debit: numDebit,
       credit: numCredit,
+      openingBalance: (openingBalance !== undefined && openingBalance !== '') ? Number(openingBalance) : null,
       balance: newBalance,
       notes,
       createdBy: req.user.id
@@ -108,6 +112,25 @@ exports.deleteSupplier = async (req, res) => {
 exports.updateSupplierTransaction = async (req, res) => {
   try {
     const { txId } = req.params;
+    const { debit, credit, openingBalance } = req.body;
+
+    const tx = await SupplierTransaction.findById(txId);
+    if (!tx) return res.status(404).json({ error: 'Not found' });
+
+    let previousBalance = 0;
+    if (openingBalance !== undefined && openingBalance !== '' && openingBalance !== null) {
+      previousBalance = Number(openingBalance);
+    } else {
+      const previousLogs = await SupplierTransaction.find({ 
+         supplierId: tx.supplierId, 
+         date: { $lt: new Date(tx.date) } 
+      }).sort({ date: -1 }).limit(1);
+      previousBalance = previousLogs.length > 0 ? previousLogs[0].balance : 0;
+    }
+
+    req.body.openingBalance = (openingBalance !== undefined && openingBalance !== '') ? Number(openingBalance) : null;
+    req.body.balance = previousBalance + Number(debit || 0) - Number(credit || 0);
+
     const updated = await SupplierTransaction.findByIdAndUpdate(txId, req.body, { new: true });
     res.json(updated);
   } catch (err) {

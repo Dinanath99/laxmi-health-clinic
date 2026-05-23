@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Banknote, Users, UserPlus, Phone, MapPin, ArrowLeft, Plus, Edit2, Trash2, X, Info } from 'lucide-react';
 import api from '../api';
+import NepaliDate from 'nepali-datetime';
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function Salary() {
   const [summary, setSummary] = useState([]);
@@ -13,7 +16,7 @@ export default function Salary() {
   
   const [editingTxId, setEditingTxId] = useState(null);
   const [nepaliMonths] = useState(["Baishakh", "Jestha", "Ashadh", "Shrawan", "Bhadra", "Ashwin", "Kartik", "Mangsir", "Poush", "Magh", "Falgun", "Chaitra"]);
-  const [nepaliDate, setNepaliDate] = useState('2083-02-05');
+  const [nepaliDate, setNepaliDate] = useState(new NepaliDate().format('YYYY-MM-DD'));
   const [nepaliMonth, setNepaliMonth] = useState('Baishakh');
   const [year, setYear] = useState('2083');
   const [basicSalary, setBasicSalary] = useState('');
@@ -209,7 +212,13 @@ export default function Salary() {
             <form onSubmit={handlePostPayroll} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Date (BS)</label>
-                <input type="text" value={nepaliDate} onChange={e => setNepaliDate(e.target.value)} required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <NepaliDatePicker
+                  inputClassName="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className=""
+                  value={nepaliDate}
+                  onChange={(value) => setNepaliDate(value)}
+                  options={{ calenderLocale: "ne", valueLocale: "en" }}
+                />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Month / Year Period</label>

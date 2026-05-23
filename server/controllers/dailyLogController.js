@@ -43,22 +43,30 @@ exports.getDailyLogs = async (req, res) => {
 
 exports.addDailyLog = async (req, res) => {
   try {
-    const { date, income, expense, notes, pharmacyName } = req.body;
+    const { date, income, expense, openingBalance, notes, pharmacyName } = req.body;
     const finalPharmacyName = pharmacyName || 'Main Pharmacy';
     
-    const previousLogs = await DailyLog.find({ 
-       pharmacyName: finalPharmacyName, 
-       date: { $lt: new Date(date) } 
-    }).sort({ date: -1 }).limit(1);
+    let previousTotal = 0;
     
-    const previousTotal = previousLogs.length > 0 ? previousLogs[0].total : 0;
-    const newTotal = previousTotal + Number(income) - Number(expense);
+    if (openingBalance !== undefined && openingBalance !== '' && openingBalance !== null) {
+      previousTotal = Number(openingBalance);
+    } else {
+      const previousLogs = await DailyLog.find({ 
+         pharmacyName: finalPharmacyName, 
+         date: { $lt: new Date(date) } 
+      }).sort({ date: -1 }).limit(1);
+      
+      previousTotal = previousLogs.length > 0 ? previousLogs[0].total : 0;
+    }
+    
+    const newTotal = previousTotal + Number(income || 0) - Number(expense || 0);
 
     const log = new DailyLog({
       pharmacyName: finalPharmacyName,
       date,
       income,
       expense,
+      openingBalance: (openingBalance !== undefined && openingBalance !== '') ? Number(openingBalance) : null,
       total: newTotal,
       notes,
       createdBy: req.user.id
@@ -78,7 +86,25 @@ exports.addDailyLog = async (req, res) => {
 exports.updateDailyLog = async (req, res) => {
   try {
     const { id } = req.params;
-    // Just directly update the log details for admin override MVP
+    const { income, expense, openingBalance } = req.body;
+
+    const log = await DailyLog.findById(id);
+    if (!log) return res.status(404).json({ error: 'Not found' });
+
+    let previousTotal = 0;
+    if (openingBalance !== undefined && openingBalance !== '' && openingBalance !== null) {
+      previousTotal = Number(openingBalance);
+    } else {
+      const previousLogs = await DailyLog.find({ 
+         pharmacyName: log.pharmacyName, 
+         date: { $lt: new Date(log.date) } 
+      }).sort({ date: -1 }).limit(1);
+      previousTotal = previousLogs.length > 0 ? previousLogs[0].total : 0;
+    }
+
+    req.body.openingBalance = (openingBalance !== undefined && openingBalance !== '') ? Number(openingBalance) : null;
+    req.body.total = previousTotal + Number(income || 0) - Number(expense || 0);
+
     const updated = await DailyLog.findByIdAndUpdate(id, req.body, { new: true });
     res.json(updated);
   } catch (err) {

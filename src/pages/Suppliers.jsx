@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Users, FileText, ArrowLeft, Plus, Edit2, Trash2, X } from 'lucide-react';
 import api from '../api';
+import NepaliDate from 'nepali-datetime';
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function Suppliers() {
   const [summary, setSummary] = useState([]);
@@ -12,11 +15,12 @@ export default function Suppliers() {
   const [editingId, setEditingId] = useState(null);
   
   // Form state
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new NepaliDate().format('YYYY-MM-DD'));
   const [type, setType] = useState('Bill (Debit)');
   const [description, setDescription] = useState('');
   const [debit, setDebit] = useState('');
   const [credit, setCredit] = useState('');
+  const [openingBalance, setOpeningBalance] = useState('');
   const [notes, setNotes] = useState('');
 
   // New Supplier Form State
@@ -54,7 +58,15 @@ export default function Suppliers() {
   const handleCreateOrUpdateTx = async (e) => {
     e.preventDefault();
     try {
-      const payload = { date, type, description, debit: Number(debit) || 0, credit: Number(credit) || 0, notes };
+      const payload = { 
+        date, 
+        type, 
+        description, 
+        debit: Number(debit) || 0, 
+        credit: Number(credit) || 0, 
+        openingBalance: openingBalance !== '' ? Number(openingBalance) : null,
+        notes 
+      };
       if (editingId) {
         await api.put(`/suppliers/${selectedSupplier._id}/ledger/${editingId}`, payload);
       } else {
@@ -70,11 +82,12 @@ export default function Suppliers() {
 
   const handleEdit = (tx) => {
     setEditingId(tx._id);
-    setDate(new Date(tx.date).toISOString().split('T')[0]);
+    setDate(tx.date.split('T')[0]);
     setType(tx.type);
     setDescription(tx.description);
     setDebit(tx.debit);
     setCredit(tx.credit);
+    setOpeningBalance(tx.openingBalance !== null && tx.openingBalance !== undefined ? tx.openingBalance : '');
     setNotes(tx.notes);
     setShowForm(true);
   };
@@ -96,6 +109,7 @@ export default function Suppliers() {
     setEditingId(null);
     setDebit('');
     setCredit('');
+    setOpeningBalance('');
     setDescription('');
     setNotes('');
   };
@@ -169,10 +183,16 @@ export default function Suppliers() {
                 </h2>
                 {editingId && <button onClick={resetForm} className="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition"><X size={20}/></button>}
              </div>
-            <form onSubmit={handleCreateOrUpdateTx} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
-              <div>
+            <form onSubmit={handleCreateOrUpdateTx} className="grid grid-cols-1 md:grid-cols-8 gap-4 items-end">
+              <div className="md:col-span-2">
                 <label className="text-xs font-bold text-slate-500">Date</label>
-                <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full p-2 border rounded-lg focus:ring-blue-500" />
+                <NepaliDatePicker
+                  inputClassName="w-full p-2 border rounded-lg focus:ring-blue-500"
+                  className=""
+                  value={date}
+                  onChange={(value) => setDate(value)}
+                  options={{ calenderLocale: "ne", valueLocale: "en" }}
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-slate-500">Type</label>
@@ -182,9 +202,13 @@ export default function Suppliers() {
                   <option value="Opening Balance">Opening Balance</option>
                 </select>
               </div>
-              <div className="md:col-span-3">
+              <div className="md:col-span-4">
                 <label className="text-xs font-bold text-slate-500">Description / Details</label>
                 <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Bill SI-0819" className="w-full p-2 border rounded-lg focus:ring-blue-500" />
+              </div>
+              <div className="md:col-span-2">
+                 <label className="text-xs font-bold text-slate-500 flex items-center gap-1">Op. Bal <span className="text-slate-400 text-[9px] lowercase font-semibold">(optional)</span></label>
+                 <input type="number" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} placeholder="0" className="w-full p-2 border rounded-lg focus:ring-blue-500" />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-slate-500">Debit (NPR)</label>
@@ -198,7 +222,7 @@ export default function Suppliers() {
                 <label className="text-xs font-bold text-slate-500">Notes (Date ref)</label>
                 <input type="text" value={notes} onChange={e => setNotes(e.target.value)} className="w-full p-2 border rounded-lg" />
               </div>
-              <div className="md:col-span-6 mt-2">
+              <div className="md:col-span-8 mt-2">
                 <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-200">
                   {editingId ? 'Save Changes' : 'Post Entry'}
                 </button>
@@ -226,7 +250,7 @@ export default function Suppliers() {
                 <tr><td colSpan="8" className="p-12 text-center text-slate-400 font-semibold tracking-wide">No entries recorded for this supplier.</td></tr>
               ) : ledgerTxs.map((tx) => (
                 <tr key={tx._id} className="hover:bg-blue-50/40 transition-colors group">
-                  <td className="px-5 py-3 font-medium">{new Date(tx.date).toISOString().split('T')[0]}</td>
+                  <td className="px-5 py-3 font-medium">{tx.date.split('T')[0]}</td>
                   <td className="px-5 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${tx.type.includes('Debit') ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>
                       {tx.type}

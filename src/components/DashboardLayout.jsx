@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookText, Pill, Activity, ShoppingCart, Users, CheckCircle, LogOut, Search, Loader, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BookText, Pill, Activity, ShoppingCart, Users, CheckCircle, LogOut, Search, Loader, Menu, X, ShieldCheck } from 'lucide-react';
 import api from '../api';
+import NepaliDate from 'nepali-datetime';
 
 const MENU_ITEMS = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/', tags: ['home', 'main', 'overview', 'stats'] },
@@ -11,7 +12,8 @@ const MENU_ITEMS = [
   { name: 'Staff Salary', icon: CheckCircle, path: '/salary', tags: ['staff', 'payroll', 'wages', 'employee'] },
   { name: 'Ledger Book', icon: BookText, path: '/ledger', tags: ['accounts', 'transactions', 'book', 'finance'] },
   { name: 'Inventory', icon: Pill, path: '/medicines', tags: ['stock', 'items', 'drugs', 'medicines', 'products'] },
-  { name: 'Patients', icon: Users, path: '/patients', tags: ['patient', 'record', 'register', 'history', 'health'] }
+  { name: 'Patients', icon: Users, path: '/patients', tags: ['patient', 'record', 'register', 'history', 'health'] },
+  { name: 'Admin Backup', icon: ShieldCheck, path: '/admin', tags: ['admin', 'backup', 'restore', 'recycle bin', 'trash', 'deleted'] }
 ];
 
 export default function DashboardLayout({ children, setAuth }) {
@@ -252,10 +254,12 @@ export default function DashboardLayout({ children, setAuth }) {
           </div>
           
            <div className="hidden md:flex items-center gap-3">
-             <div className="text-right">
-               <p className="text-xs font-bold text-slate-800">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-               <p className="text-[10px] text-slate-400 max-w-[120px] truncate">{user.email}</p>
-             </div>
+             <Link to="/admin" className="text-right hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer block border border-transparent hover:border-slate-200">
+               <p className="text-xs font-bold text-slate-800 flex justify-end gap-1 items-center">
+                 {new NepaliDate().format('YYYY-MM-DD')} <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+               </p>
+               <p className="text-[10px] text-slate-400 max-w-[120px] truncate">{user.email || 'Admin'}</p>
+             </Link>
            </div>
         </header>
 

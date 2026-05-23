@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, Printer, CheckCircle } from 'lucide-react';
 import api from '../api';
+import NepaliDate from 'nepali-datetime';
 
 export default function Billing() {
   const [medicines, setMedicines] = useState([]);
@@ -51,7 +52,8 @@ export default function Billing() {
     try {
       await api.post('/bills', {
         items: cart.map(({medicineId, name, quantity, unitPrice, total}) => ({medicineId, name, quantity, unitPrice, total})),
-        grandTotal
+        grandTotal,
+        date: new NepaliDate().format('YYYY-MM-DD')
       });
       setSuccess(true);
       setCart([]);

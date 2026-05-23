@@ -12,6 +12,9 @@ import {
   ClipboardList,
 } from "lucide-react";
 import api from "../api";
+import NepaliDate from 'nepali-datetime';
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function DailyLog() {
   const [pharmacies, setPharmacies] = useState([]);
@@ -24,7 +27,8 @@ export default function DailyLog() {
   const [editingId, setEditingId] = useState(null);
 
   // Form State
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(new NepaliDate().format("YYYY-MM-DD"));
+  const [openingBalance, setOpeningBalance] = useState("");
   const [income, setIncome] = useState("");
   const [expense, setExpense] = useState("");
   const [notes, setNotes] = useState("");
@@ -106,6 +110,7 @@ export default function DailyLog() {
       const payload = {
         pharmacyName: activePharmacy,
         date,
+        openingBalance: openingBalance !== "" ? Number(openingBalance) : null,
         income: Number(income) || 0,
         expense: Number(expense) || 0,
         notes,
@@ -127,7 +132,8 @@ export default function DailyLog() {
 
   const handleEdit = (log) => {
     setEditingId(log._id);
-    setDate(new Date(log.date).toISOString().split("T")[0]);
+    setDate(log.date.split("T")[0]);
+    setOpeningBalance(log.openingBalance !== null && log.openingBalance !== undefined ? log.openingBalance : "");
     setIncome(log.income);
     setExpense(log.expense);
     setNotes(log.notes);
@@ -152,6 +158,7 @@ export default function DailyLog() {
   const resetForm = () => {
     setShowForm(false);
     setEditingId(null);
+    setOpeningBalance("");
     setIncome("");
     setExpense("");
     setNotes("");
@@ -300,18 +307,30 @@ export default function DailyLog() {
           </div>
           <form
             onSubmit={handleCreateOrUpdate}
-            className="grid grid-cols-1 md:grid-cols-4 gap-5 items-end"
+            className="grid grid-cols-1 md:grid-cols-5 gap-5 items-end"
           >
             <div>
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">
                 Date (BS/AD)
               </label>
-              <input
-                type="date"
+              <NepaliDatePicker
+                inputClassName="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none font-bold text-slate-700 transition-colors"
+                className=""
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
+                onChange={(value) => setDate(value)}
+                options={{ calenderLocale: "ne", valueLocale: "en" }}
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                Op. Balance <span className="text-slate-400 text-[9px] lowercase font-semibold">(optional)</span>
+              </label>
+              <input
+                type="number"
+                value={openingBalance}
+                onChange={(e) => setOpeningBalance(e.target.value)}
                 className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none font-bold text-slate-700 transition-colors"
+                placeholder="e.g. 10000"
               />
             </div>
             <div>
@@ -350,7 +369,7 @@ export default function DailyLog() {
                 placeholder="Optional descriptions"
               />
             </div>
-            <div className="md:col-span-4 mt-2">
+            <div className="md:col-span-5 mt-2">
               <button
                 type="submit"
                 className="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3.5 rounded-xl transition shadow-lg flex justify-center items-center gap-2"
@@ -418,7 +437,7 @@ export default function DailyLog() {
                       {index + 1}.
                     </td>
                     <td className="px-6 py-4 font-bold text-slate-800 tracking-tight">
-                      {new Date(log.date).toISOString().split("T")[0]}
+                      {log.date.split("T")[0]}
                     </td>
                     <td className="px-6 py-4 text-right">
                       {log.income > 0 ? (

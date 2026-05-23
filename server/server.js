@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+// Global Plugin setup BEFORE models load
+mongoose.plugin(require('./models/trashPlugin'));
+
 // Route Imports
 const authRoutes = require('./routes/authRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
@@ -14,6 +17,7 @@ const dailyLogRoutes = require('./routes/dailyLogRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const patientRoutes = require('./routes/patientRoutes');
+const trashRoutes = require('./routes/trashRoutes');
 
 const app = express();
 
@@ -23,6 +27,8 @@ app.use(express.json());
 
 // Database Connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/pharmacy_db';
+
+
 mongoose.connect(MONGO_URI)
   .then(() => console.log('Connected to MongoDB successfully!'))
   .catch(err => console.error('MongoDB connection error:', err));
@@ -38,6 +44,7 @@ app.use('/api/salary', staffRoutes);
 app.use('/api/seed', seedRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/trash', trashRoutes);
 
 // General Error Handler
 app.use((err, req, res, next) => {

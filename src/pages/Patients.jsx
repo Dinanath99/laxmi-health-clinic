@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import api from "../api";
+import NepaliDate from "nepali-datetime";
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -196,15 +197,20 @@ export default function Patients() {
   };
 
   // Get current Date Time in the format shown typically
-  const currentDateTime = new Date().toLocaleString("en-US", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  const currentDateTime = new NepaliDate().format("YYYY-MM-DD");
+
+  // Compute bill number
+  const computedBillNo = editingId
+    ? patients.findIndex((p) => p._id === editingId) + 1
+    : patients.length + 1;
 
   // Pagination logic
   const indexOfLastPatient = currentPage * patientsPerPage;
   const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
-  const currentPatients = patients.slice(indexOfFirstPatient, indexOfLastPatient);
+  const currentPatients = patients.slice(
+    indexOfFirstPatient,
+    indexOfLastPatient,
+  );
   const totalPages = Math.ceil(patients.length / patientsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -228,7 +234,7 @@ export default function Patients() {
           }}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold shadow-sm transition"
         >
-          <UserPlus size={18} /> Register Patient
+          <UserPlus size={18} /> Patient Record
         </button>
       </div>
 
@@ -265,9 +271,7 @@ export default function Patients() {
               <div className="flex justify-between items-start text-xs font-bold mb-3 border-b-2 border-red-500 pb-4">
                 <div className="flex flex-col gap-3 w-full">
                   <div className="flex w-full justify-between items-center">
-                    <span>
-                      Reg.No :- 13425/413/750/32
-                    </span>
+                    <span>Reg.No :- 13425/413/750/32</span>
                     <span className="italic font-bold">
                       " Dedicated Towards Your Health "
                     </span>
@@ -275,7 +279,11 @@ export default function Patients() {
 
                   <div className="relative mt-2 mb-1 flex items-center justify-center w-full min-h-[5rem]">
                     <div className="absolute left-0">
-                      <img src="/crest-logo.png" alt="Shree Laxmi Health Clinic Crest" className="h-16 w-16 md:h-20 md:w-20 object-contain" />
+                      <img
+                        src="/crest-logo.png"
+                        alt="Shree Laxmi Health Clinic Crest"
+                        className="h-16 w-16 md:h-20 md:w-20 object-contain"
+                      />
                     </div>
                     <div className="text-center">
                       <h1 className="text-[28px] md:text-3xl font-extrabold uppercase tracking-wide mb-1 leading-none text-slate-900">
@@ -284,6 +292,25 @@ export default function Patients() {
                       <p className="text-[15px] font-extrabold tracking-tight text-slate-800">
                         Garuda Nagarpalika'5 Shivnagar Rautahat'Nepal
                       </p>
+                    </div>
+                  </div>
+
+                  {/* PAN No */}
+                  <div className="flex justify-center mb-2 mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm md:text-base text-slate-900">
+                        PAN No:-
+                      </span>
+                      <div className="flex">
+                        {"125084804".split("").map((digit, idx) => (
+                          <div
+                            key={idx}
+                            className="w-5 h-6 md:w-6 md:h-7 border-[1.5px] border-slate-800 print:border-black flex items-center justify-center font-bold text-sm md:text-base text-slate-900"
+                          >
+                            {digit}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -327,8 +354,8 @@ export default function Patients() {
                     </div>
 
                     {/* Address & Date/Time */}
-                    <div className="flex items-end gap-1 w-full justify-between mt-2 flex-wrap text-sm md:text-[15px]">
-                      <div className="flex items-end gap-1 flex-[2] min-w-[300px]">
+                    <div className="flex items-start gap-1 w-full justify-between mt-2 flex-wrap text-sm md:text-[15px]">
+                      <div className="flex items-end gap-1 flex-[2] min-w-[300px] pt-2">
                         <span>Address:-</span>
                         <input
                           type="text"
@@ -343,10 +370,18 @@ export default function Patients() {
                           placeholder="Address Details"
                         />
                       </div>
-                      <div className="flex items-end gap-1 flex-1 min-w-[200px] md:pl-4">
-                        <span>Date/Time</span>
-                        <div className="flex-1 border-b-[1.5px] border-dotted border-slate-800 bg-transparent px-1 pb-1 text-blue-900 text-center font-mono text-sm">
-                          {currentDateTime}
+                      <div className="flex flex-col gap-2 flex-1 min-w-[200px] md:pl-4">
+                        <div className="flex items-end gap-1 w-full mt-2 md:mt-0">
+                          <span>Date/Time:</span>
+                          <div className="flex-1 border-b-[1.5px] border-dotted border-slate-800 bg-transparent px-1 pb-1 text-blue-900 text-center font-mono text-sm">
+                            {currentDateTime}
+                          </div>
+                        </div>
+                        <div className="flex items-end gap-1 w-full">
+                          <span>Bill No:-</span>
+                          <div className="w-16 border-b-[1.5px] border-dotted border-slate-800 bg-transparent px-1 pb-1 text-blue-900 text-center font-mono text-sm h-6">
+                            {computedBillNo}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -356,9 +391,60 @@ export default function Patients() {
 
               <div className="w-full h-1.5 bg-red-500 rounded-sm mb-6 print:hidden hidden"></div>
 
-              {/* The rest of the form is intentionally left blank for manual clinical notes or invoice printing */}
-              <div className="flex-1 w-full min-h-[300px]"></div>
+              {/* Invoice Section for Printing */}
+              <div className="mt-4 flex flex-col w-full border-[1.5px] border-slate-800 print:border-black flex-1 min-h-[500px] text-slate-900">
+                {/* Table Header */}
+                <div className="flex border-b-[1.5px] border-slate-800 print:border-black font-bold text-center text-sm md:text-base">
+                  <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black py-2">
+                    S.N.
+                  </div>
+                  <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black py-2 text-left pl-4">
+                    Particular
+                  </div>
+                  <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black py-2">
+                    Rate
+                  </div>
+                  <div className="w-24 md:w-32 py-2">Total</div>
+                </div>
 
+                {/* Empty Rows Space */}
+                <div className="flex-1 flex w-full relative min-h-[400px]">
+                  <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black"></div>
+                  <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black"></div>
+                  <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black"></div>
+                  <div className="w-24 md:w-32"></div>
+                </div>
+
+                {/* Total Row */}
+                <div className="flex border-t-[1.5px] border-slate-800 print:border-black font-bold text-center h-10 items-center">
+                  <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black h-full"></div>
+                  <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black h-full text-right pr-4 py-1.5 uppercase font-black">
+                    Total
+                  </div>
+                  <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black h-full"></div>
+                  <div className="w-24 md:w-32 h-full"></div>
+                </div>
+              </div>
+
+              {/* Footer Section */}
+              <div className="mt-4 flex justify-between items-end text-sm md:text-base font-bold pb-2 text-slate-900 mb-8 min-h-[60px]">
+                <div className="flex items-end gap-2 flex-[2]">
+                  <span className="whitespace-nowrap">Amount in words:-</span>
+                  <input
+                    type="text"
+                    className="w-full max-w-[400px] border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none focus:border-blue-500 rounded-none text-sm text-slate-900 px-2"
+                    placeholder="e.g. Fifty Thousands Only"
+                  />
+                </div>
+                <div className="flex items-end gap-2 flex-1 justify-end mt-8 sm:mt-0">
+                  <span className="whitespace-nowrap"> Sign:</span>
+                  <input
+                    type="text"
+                    className="w-40 border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none focus:border-blue-500 rounded-none text-sm text-center text-slate-900"
+                    placeholder=""
+                  />
+                </div>
+              </div>
 
               {/* Submit action */}
               <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-4 print:hidden flex-col md:flex-row">
@@ -460,7 +546,7 @@ export default function Patients() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-xs font-semibold text-slate-500">
-                    {new Date(p.createdAt).toLocaleDateString()}
+                    {new NepaliDate(new Date(p.createdAt)).format("YYYY-MM-DD")}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-3">
@@ -501,9 +587,16 @@ export default function Patients() {
       {totalPages > 1 && (
         <div className="print:hidden mt-6 flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100 gap-4">
           <p className="text-sm font-semibold text-slate-500">
-            Showing <span className="text-blue-600 font-extrabold">{indexOfFirstPatient + 1}</span> to{" "}
-            <span className="text-blue-600 font-extrabold">{Math.min(indexOfLastPatient, patients.length)}</span> of{" "}
-            <span className="font-extrabold">{patients.length}</span> patients
+            Showing{" "}
+            <span className="text-blue-600 font-extrabold">
+              {indexOfFirstPatient + 1}
+            </span>{" "}
+            to{" "}
+            <span className="text-blue-600 font-extrabold">
+              {Math.min(indexOfLastPatient, patients.length)}
+            </span>{" "}
+            of <span className="font-extrabold">{patients.length}</span>{" "}
+            patients
           </p>
           <div className="flex items-center gap-2">
             <button
@@ -514,36 +607,45 @@ export default function Patients() {
               <ChevronLeft size={18} />
             </button>
             <div className="flex gap-1 flex-wrap justify-center">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                // To keep it clean if there are many pages, show surrounding pages
-                if (
-                  page === 1 || 
-                  page === totalPages || 
-                  (page >= currentPage - 2 && page <= currentPage + 2)
-                ) {
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => paginate(page)}
-                      className={`w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center ${
-                        currentPage === page
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-200 border-none"
-                          : "text-slate-500 border border-transparent hover:bg-slate-50 hover:border-slate-200"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                } else if (
-                  page === currentPage - 3 || page === currentPage + 3
-                ) {
-                  return <span key={page} className="px-1 text-slate-400">...</span>;
-                }
-                return null;
-              })}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => {
+                  // To keep it clean if there are many pages, show surrounding pages
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 2 && page <= currentPage + 2)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => paginate(page)}
+                        className={`w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center ${
+                          currentPage === page
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-200 border-none"
+                            : "text-slate-500 border border-transparent hover:bg-slate-50 hover:border-slate-200"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 3 ||
+                    page === currentPage + 3
+                  ) {
+                    return (
+                      <span key={page} className="px-1 text-slate-400">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                },
+              )}
             </div>
             <button
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
               className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
@@ -552,7 +654,6 @@ export default function Patients() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

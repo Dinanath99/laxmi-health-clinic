@@ -5,11 +5,11 @@ exports.createBill = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { items, grandTotal } = req.body;
+    const { items, grandTotal, date } = req.body;
     let billNo = 'BILL-' + Date.now();
     
     // 1. Create Bill
-    const bill = new Bill({ billNo, items, grandTotal, createdBy: req.user.id });
+    const bill = new Bill({ billNo, items, grandTotal, createdBy: req.user.id, ...(date && { date }) });
     await bill.save({ session });
     
     // 2. Reduce Stock
@@ -27,7 +27,8 @@ exports.createBill = async (req, res) => {
       amountDR: grandTotal,
       balance: newBalance,
       type: 'cash',
-      createdBy: req.user.id
+      createdBy: req.user.id,
+      ...(date && { date })
     });
     await tx.save({ session });
     

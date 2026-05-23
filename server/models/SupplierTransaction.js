@@ -7,6 +7,7 @@ const supplierTransactionSchema = new mongoose.Schema({
   description: String,
   debit: { type: Number, default: 0 },
   credit: { type: Number, default: 0 },
+  openingBalance: { type: Number, default: null },
   balance: { type: Number, required: true },
   notes: String,
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

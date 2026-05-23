@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import NepaliDate from 'nepali-datetime';
 import { Users, Wallet, PackageOpen, LayoutTemplate, Activity, ArrowRight, TrendingUp, HeartPulse, CreditCard, Banknote } from 'lucide-react';
 import api from '../api';
 
@@ -35,10 +36,10 @@ export default function Dashboard() {
         
         const revenue = bills.reduce((acc, b) => acc + b.grandTotal, 0);
         
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = new NepaliDate().format('YYYY-MM-DD');
         const todaysSales = bills
             .filter(b => {
-               try { return b.date && new Date(b.date).toISOString().includes(todayStr); }
+               try { return b.date && b.date.includes(todayStr); }
                catch(e) { return false; }
             })
             .reduce((acc, b) => acc + (b.grandTotal || 0), 0);
@@ -135,7 +136,7 @@ export default function Dashboard() {
               ) : stats.recentBills.map(bill => (
                 <tr key={bill._id} className="hover:bg-blue-50/40 hover:text-blue-900 transition-colors cursor-pointer group">
                   <td className="px-4 py-4 font-extrabold text-blue-600 group-hover:text-blue-700">#{bill.billNo}</td>
-                  <td className="px-4 py-4 font-semibold">{new Date(bill.date).toISOString().split('T')[0]}</td>
+                  <td className="px-4 py-4 font-semibold">{bill.date.split('T')[0]}</td>
                   <td className="px-4 py-4 text-center">
                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{bill.items.length} items</span>
                   </td>

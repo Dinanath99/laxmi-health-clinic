@@ -11,6 +11,7 @@ const dailyLogSchema = new mongoose.Schema(
     date: { type: Date, required: true, index: true },
     income: { type: Number, default: 0 },
     expense: { type: Number, default: 0 },
+    openingBalance: { type: Number, default: null },
     total: { type: Number, default: 0 },
     remaining: { type: Number, default: 0 },
     notes: String,
