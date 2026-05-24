@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, ArrowLeft, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Users, FileText, ArrowLeft, Plus, Edit2, Trash2, X, Printer } from 'lucide-react';
 import api from '../api';
 import NepaliDate from 'nepali-datetime';
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
@@ -159,20 +159,32 @@ export default function Suppliers() {
   };
 
   if (selectedSupplier) {
+    const totalDr = ledgerTxs.reduce((sum, tx) => sum + (tx.debit || 0), 0);
+    const totalCr = ledgerTxs.reduce((sum, tx) => sum + (tx.credit || 0), 0);
+    const finalBalance = ledgerTxs.length > 0 ? ledgerTxs[0].balance : 0;
+
     return (
       <div className="w-full relative z-10 animate-fade-in-down">
-        <button onClick={() => setSelectedSupplier(null)} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6 transition">
+        <button onClick={() => setSelectedSupplier(null)} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6 transition print:hidden">
            <ArrowLeft size={18} /> Back to Supplier Summary
         </button>
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 print:hidden">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">{selectedSupplier.name}</h1>
             <p className="text-slate-500 mt-1">Detailed Supplier Ledger Sheet</p>
           </div>
-          <button onClick={() => { if(showForm) resetForm(); else setShowForm(true); }} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold shadow-sm transition">
-            {showForm ? 'Cancel Form' : <><Plus size={18} /> New Entry</>}
-          </button>
+          <div className="flex gap-3">
+             <button
+               onClick={() => window.print()}
+               className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-bold shadow-sm transition"
+             >
+               <Printer size={20} /> Print Ledger
+             </button>
+             <button onClick={() => { if(showForm) resetForm(); else setShowForm(true); }} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold shadow-sm transition">
+               {showForm ? 'Cancel Form' : <><Plus size={18} /> New Entry</>}
+             </button>
+          </div>
         </div>
 
         {showForm && (
@@ -231,7 +243,7 @@ export default function Suppliers() {
           </div>
         )}
 
-        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-x-auto">
+        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden print:hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead className="bg-slate-800 backdrop-blur-md border-b border-slate-700">
               <tr>
@@ -272,8 +284,45 @@ export default function Suppliers() {
             </tbody>
           </table>
         </div>
+
+      {/* Print View: Dot Matrix Style summary ledger */}
+      <div className="hidden print:block font-mono text-xs w-full bg-white text-black bg-transparent">
+        <div className="text-left mb-2 leading-tight">
+          GARUDA -4 RAUTAHAT<br/>
+          GARUDA<br/>
+          LEDGER<br/>
+          {selectedSupplier.name.toUpperCase()} A/C<br/>
+          garuda nagarpalika,shivnagar<br/>
+        </div>
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-1 flex">
+          <div className="w-[15%]">MITI</div>
+          <div className="w-[45%] text-center">PARTICULARS</div>
+          <div className="w-[15%] text-right pr-4">AMOUNT DR.</div>
+          <div className="w-[15%] text-right pr-4">AMOUNT CR.</div>
+          <div className="w-[10%] text-right">BALANCE</div>
+        </div>
+        
+        {/* Reversed because txs are normally sorted descending for UI */}
+        {[...ledgerTxs].reverse().map((tx) => (
+          <div key={tx._id} className="flex py-0.5 whitespace-pre">
+            <div className="w-[15%]">{tx.date.split("T")[0]}</div>
+            <div className="w-[45%] truncate">{tx.type === 'Opening Balance' ? "Opening Balance..B/F" : (tx.description || "To SUPPLIER BILL")}</div>
+            <div className="w-[15%] text-right pr-4">{tx.debit > 0 ? tx.debit.toFixed(2) : ''}</div>
+            <div className="w-[15%] text-right pr-4">{tx.credit > 0 ? tx.credit.toFixed(2) : ''}</div>
+            <div className="w-[10%] text-right">{tx.balance.toFixed(2)} Dr</div>
+          </div>
+        ))}
+        
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-2 flex font-bold mt-4">
+          <div className="w-[60%] text-right pr-8 font-black">TOTALS ........................</div>
+          <div className="w-[15%] text-right pr-4">{totalDr.toFixed(2)}</div>
+          <div className="w-[15%] text-right pr-4">{totalCr.toFixed(2)}</div>
+          <div className="w-[10%] text-right">{finalBalance.toFixed(2)} Dr</div>
+        </div>
       </div>
-    );
+
+    </div>
+  );
   }
 
   // --- Summary View ---

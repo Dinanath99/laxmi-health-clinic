@@ -7,6 +7,7 @@ import {
   X,
   ArrowLeft,
   Building2,
+  Printer
 } from "lucide-react";
 import api from "../api";
 import NepaliDate from 'nepali-datetime';
@@ -269,9 +270,13 @@ export default function Ledger() {
   }
 
   // Active Ledger View
+  const totalDr = txs.reduce((sum, tx) => sum + (tx.amountDR || 0), 0);
+  const totalCr = txs.reduce((sum, tx) => sum + (tx.amountCR || 0), 0);
+  const finalBalance = txs.length > 0 ? txs[0].balance : 0;
+  
   return (
     <div className="w-full relative z-10 animate-fade-in-down">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 print:hidden">
         <button
           onClick={() => {
             setActiveLedger(null);
@@ -289,7 +294,13 @@ export default function Ledger() {
             General journal of all debits, credits, and precise balances.
           </p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-3">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-bold shadow-sm transition"
+          >
+            <Printer size={20} /> Print Ledger
+          </button>
           <button
             onClick={() => {
               if (showForm) resetForm();
@@ -426,7 +437,7 @@ export default function Ledger() {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden print:hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-slate-200">
@@ -548,6 +559,43 @@ export default function Ledger() {
           </table>
         </div>
       </div>
+
+      {/* Print View: Dot Matrix Style summary ledger */}
+      <div className="hidden print:block font-mono text-xs w-full bg-white text-black bg-transparent">
+        <div className="text-left mb-2 leading-tight">
+          GARUDA -4 RAUTAHAT<br/>
+          GARUDA<br/>
+          LEDGER<br/>
+          {activeLedger.toUpperCase()} A/C<br/>
+          garuda nagarpalika,shivnagar<br/>
+        </div>
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-1 flex">
+          <div className="w-[15%]">MITI</div>
+          <div className="w-[45%] text-center">PARTICULARS</div>
+          <div className="w-[15%] text-right pr-4">AMOUNT DR.</div>
+          <div className="w-[15%] text-right pr-4">AMOUNT CR.</div>
+          <div className="w-[10%] text-right">BALANCE</div>
+        </div>
+        
+        {/* Reversed because txs are normally sorted descending for UI */}
+        {[...txs].reverse().map((tx) => (
+          <div key={tx._id} className="flex py-0.5 whitespace-pre">
+            <div className="w-[15%]">{tx.date.split("T")[0]}</div>
+            <div className="w-[45%] truncate">{tx.openingBalance !== null ? "Opening Balance..B/F" : (tx.particulars || "To SALES BILL")}</div>
+            <div className="w-[15%] text-right pr-4">{tx.amountDR > 0 ? tx.amountDR.toFixed(2) : ''}</div>
+            <div className="w-[15%] text-right pr-4">{tx.amountCR > 0 ? tx.amountCR.toFixed(2) : ''}</div>
+            <div className="w-[10%] text-right">{tx.balance.toFixed(2)} Dr</div>
+          </div>
+        ))}
+        
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-2 flex font-bold mt-4">
+          <div className="w-[60%] text-right pr-8 font-black">TOTALS ........................</div>
+          <div className="w-[15%] text-right pr-4">{totalDr.toFixed(2)}</div>
+          <div className="w-[15%] text-right pr-4">{totalCr.toFixed(2)}</div>
+          <div className="w-[10%] text-right">{finalBalance.toFixed(2)} Dr</div>
+        </div>
+      </div>
+
     </div>
   );
 }

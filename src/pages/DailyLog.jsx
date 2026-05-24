@@ -10,6 +10,7 @@ import {
   TrendingUp,
   TrendingDown,
   ClipboardList,
+  Printer
 } from "lucide-react";
 import api from "../api";
 import NepaliDate from 'nepali-datetime';
@@ -250,9 +251,13 @@ export default function DailyLog() {
   }
 
   // Active Pharmacy Ledger View
+  const totalIncome = logs.reduce((sum, log) => sum + (log.income || 0), 0);
+  const totalExp = logs.reduce((sum, log) => sum + (log.exp || 0), 0);
+  const finalBalance = logs.length > 0 ? logs[0].balance : 0;
+
   return (
     <div className="w-full relative z-10 animate-fade-in-down">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 print:hidden">
         <button
           onClick={() => {
             setActivePharmacy(null);
@@ -270,7 +275,13 @@ export default function DailyLog() {
             Daily Sell & Expenditure Ledger
           </p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-3">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-bold shadow-sm transition"
+          >
+            <Printer size={20} /> Print Ledger
+          </button>
           <button
             onClick={() => {
               if (showForm) resetForm();
@@ -384,7 +395,7 @@ export default function DailyLog() {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden print:hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-slate-200">
@@ -489,6 +500,43 @@ export default function DailyLog() {
           </table>
         </div>
       </div>
+
+      {/* Print View: Dot Matrix Style summary ledger */}
+      <div className="hidden print:block font-mono text-xs w-full bg-white text-black bg-transparent">
+        <div className="text-left mb-2 leading-tight">
+          GARUDA -4 RAUTAHAT<br/>
+          GARUDA<br/>
+          LEDGER<br/>
+          {activePharmacy.toUpperCase()} A/C<br/>
+          garuda nagarpalika,shivnagar<br/>
+        </div>
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-1 flex">
+          <div className="w-[15%]">MITI</div>
+          <div className="w-[45%] text-center">PARTICULARS</div>
+          <div className="w-[15%] text-right pr-4">INCOME</div>
+          <div className="w-[15%] text-right pr-4">EXPENSE</div>
+          <div className="w-[10%] text-right">BALANCE</div>
+        </div>
+        
+        {/* Reversed because logs are normally sorted descending for UI */}
+        {[...logs].reverse().map((log) => (
+          <div key={log._id} className="flex py-0.5 whitespace-pre">
+            <div className="w-[15%]">{log.date.split("T")[0]}</div>
+            <div className="w-[45%] truncate">{log.openingBalance !== null ? "Opening Balance..B/F" : (log.remarks || "To SALES BILL")}</div>
+            <div className="w-[15%] text-right pr-4">{log.income > 0 ? log.income.toFixed(2) : ''}</div>
+            <div className="w-[15%] text-right pr-4">{log.exp > 0 ? log.exp.toFixed(2) : ''}</div>
+            <div className="w-[10%] text-right">{log.balance.toFixed(2)} Dr</div>
+          </div>
+        ))}
+        
+        <div className="border-t-2 border-b-2 border-dashed border-black py-1 my-2 flex font-bold mt-4">
+          <div className="w-[60%] text-right pr-8 font-black">TOTALS ........................</div>
+          <div className="w-[15%] text-right pr-4">{totalIncome.toFixed(2)}</div>
+          <div className="w-[15%] text-right pr-4">{totalExp.toFixed(2)}</div>
+          <div className="w-[10%] text-right">{finalBalance.toFixed(2)} Dr</div>
+        </div>
+      </div>
+
     </div>
   );
 }
