@@ -15,6 +15,7 @@ import Suppliers from "./pages/Suppliers";
 import Salary from "./pages/Salary";
 import Patients from "./pages/Patients";
 import AdminProfile from "./pages/AdminProfile";
+import Rent from "./pages/Rent";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/medicines" element={<Medicines />} />
           <Route path="/ledger" element={<Ledger />} />
           <Route path="/patients" element={<Patients />} />
+          <Route path="/rent" element={<Rent />} />
           <Route path="/admin" element={<AdminProfile />} />
         </Routes>
       </DashboardLayout>

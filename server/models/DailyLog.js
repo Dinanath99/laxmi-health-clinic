@@ -15,6 +15,13 @@ const dailyLogSchema = new mongoose.Schema(
     total: { type: Number, default: 0 },
     remaining: { type: Number, default: 0 },
     notes: String,
+    items: [
+      {
+        type: { type: String, enum: ['income', 'expense'] },
+        amount: { type: Number, required: true },
+        remark: { type: String }
+      }
+    ],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true },

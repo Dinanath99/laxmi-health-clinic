@@ -43,7 +43,7 @@ exports.getDailyLogs = async (req, res) => {
 
 exports.addDailyLog = async (req, res) => {
   try {
-    const { date, income, expense, openingBalance, notes, pharmacyName } = req.body;
+    const { date, income, expense, openingBalance, notes, pharmacyName, items } = req.body;
     const finalPharmacyName = pharmacyName || 'Main Pharmacy';
     
     let previousTotal = 0;
@@ -69,6 +69,7 @@ exports.addDailyLog = async (req, res) => {
       openingBalance: (openingBalance !== undefined && openingBalance !== '') ? Number(openingBalance) : null,
       total: newTotal,
       notes,
+      items: items || [],
       createdBy: req.user.id
     });
     

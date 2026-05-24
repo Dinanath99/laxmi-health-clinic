@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ShieldCheck,
+  Home,
 } from "lucide-react";
 import api from "../api";
 import NepaliDate from "nepali-datetime";
@@ -54,6 +55,12 @@ const MENU_ITEMS = [
     icon: BookText,
     path: "/ledger",
     tags: ["accounts", "transactions", "book", "finance"],
+  },
+  {
+    name: "Rent Management",
+    icon: Home,
+    path: "/rent",
+    tags: ["rent", "room", "clinic", "payment", "expenses"],
   },
   {
     name: "Inventory",

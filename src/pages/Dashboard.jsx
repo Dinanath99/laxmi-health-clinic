@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NepaliDate from 'nepali-datetime';
 import { Users, Wallet, PackageOpen, LayoutTemplate, Activity, ArrowRight, TrendingUp, HeartPulse, CreditCard, Banknote } from 'lucide-react';
 import api from '../api';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     revenue: 0,
     todaysSales: 0,
@@ -67,8 +69,8 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const StatCard = ({ title, value, icon: Icon, color, gradient }) => (
-    <div className={`bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:-translate-y-1.5 hover:shadow-[0_12px_30px_-4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out cursor-default relative overflow-hidden group`}>
+  const StatCard = ({ title, value, icon: Icon, color, gradient, path }) => (
+    <div onClick={() => path && navigate(path)} className={`bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:-translate-y-1.5 hover:shadow-[0_12px_30px_-4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${path ? 'cursor-pointer hover:border-blue-200' : 'cursor-default'} relative overflow-hidden group`}>
       <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-1000 -mr-10 -mt-10 pointer-events-none`}></div>
       <div className="flex justify-between items-start relative z-10">
         <div>
@@ -100,15 +102,15 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Gross Revenue" value={`Rs. ${stats.revenue.toLocaleString()}`} icon={Wallet} color="text-white" gradient="from-blue-500 to-indigo-600" />
-        <StatCard title="Today's Sales" value={`Rs. ${stats.todaysSales.toLocaleString()}`} icon={Banknote} color="text-white" gradient="from-emerald-400 to-teal-500" />
-        <StatCard title="Registered Patients" value={stats.totalPatients} icon={HeartPulse} color="text-white" gradient="from-rose-400 to-pink-500" />
-        <StatCard title="Bills Generated" value={stats.totalBills} icon={LayoutTemplate} color="text-white" gradient="from-cyan-400 to-blue-500" />
+        <StatCard title="Gross Revenue" value={`Rs. ${stats.revenue.toLocaleString()}`} icon={Wallet} color="text-white" gradient="from-blue-500 to-indigo-600" path="/billing" />
+        <StatCard title="Today's Sales" value={`Rs. ${stats.todaysSales.toLocaleString()}`} icon={Banknote} color="text-white" gradient="from-emerald-400 to-teal-500" path="/dailylog" />
+        <StatCard title="Registered Patients" value={stats.totalPatients} icon={HeartPulse} color="text-white" gradient="from-rose-400 to-pink-500" path="/patients" />
+        <StatCard title="Bills Generated" value={stats.totalBills} icon={LayoutTemplate} color="text-white" gradient="from-cyan-400 to-blue-500" path="/billing" />
         
-        <StatCard title="Vendor Payables" value={`Rs. ${stats.pendingPayables.toLocaleString()}`} icon={CreditCard} color="text-white" gradient="from-orange-400 to-amber-500" />
-        <StatCard title="Inventory Items" value={stats.totalMedicines} icon={PackageOpen} color="text-white" gradient="from-violet-500 to-purple-600" />
-        <StatCard title="Data Suppliers" value={stats.totalSuppliers} icon={Users} color="text-white" gradient="from-slate-600 to-slate-800" />
-        <StatCard title="Clinic Staff" value={stats.totalStaff} icon={Users} color="text-white" gradient="from-fuchsia-500 to-pink-600" />
+        <StatCard title="Vendor Payables" value={`Rs. ${stats.pendingPayables.toLocaleString()}`} icon={CreditCard} color="text-white" gradient="from-orange-400 to-amber-500" path="/suppliers" />
+        <StatCard title="Inventory Items" value={stats.totalMedicines} icon={PackageOpen} color="text-white" gradient="from-violet-500 to-purple-600" path="/medicines" />
+        <StatCard title="Data Suppliers" value={stats.totalSuppliers} icon={Users} color="text-white" gradient="from-slate-600 to-slate-800" path="/suppliers" />
+        <StatCard title="Clinic Staff" value={stats.totalStaff} icon={Users} color="text-white" gradient="from-fuchsia-500 to-pink-600" path="/salary" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -117,7 +119,7 @@ export default function Dashboard() {
             <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
               <Activity className="text-blue-500" size={22} strokeWidth={2.5}/> Recent Sales
             </h2>
-            <button className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group">
+            <button onClick={() => navigate('/billing')} className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group">
                View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform"/>
             </button>
           </div>
@@ -134,7 +136,7 @@ export default function Dashboard() {
               {stats.recentBills.length === 0 ? (
                 <tr><td colSpan="4" className="py-8 text-center text-slate-400 font-semibold tracking-wide">No sales recorded yet.</td></tr>
               ) : stats.recentBills.map(bill => (
-                <tr key={bill._id} className="hover:bg-blue-50/40 hover:text-blue-900 transition-colors cursor-pointer group">
+                <tr key={bill._id} onClick={() => navigate('/billing')} className="hover:bg-blue-50/40 hover:text-blue-900 transition-colors cursor-pointer group">
                   <td className="px-4 py-4 font-extrabold text-blue-600 group-hover:text-blue-700">#{bill.billNo}</td>
                   <td className="px-4 py-4 font-semibold">{bill.date.split('T')[0]}</td>
                   <td className="px-4 py-4 text-center">
@@ -158,7 +160,7 @@ export default function Dashboard() {
                    <p className="text-slate-400 font-semibold text-sm">All stock levels are perfectly optimal.</p>
                </div>
             ) : stats.lowStockItems.map(item => (
-              <div key={item._id} className="flex justify-between items-center p-4 border border-rose-100 bg-rose-50/50 rounded-2xl hover:bg-rose-100 transition-colors duration-300 cursor-pointer group">
+              <div key={item._id} onClick={() => navigate('/medicines')} className="flex justify-between items-center p-4 border border-rose-100 bg-rose-50/50 rounded-2xl hover:bg-rose-100 transition-colors duration-300 cursor-pointer group">
                 <div>
                   <p className="font-extrabold text-slate-800 group-hover:text-rose-900 transition-colors">{item.name}</p>
                   <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest mt-1">Threshold: {item.lowStockThreshold}</p>

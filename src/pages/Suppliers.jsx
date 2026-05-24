@@ -288,8 +288,8 @@ export default function Suppliers() {
       {/* Print View: Dot Matrix Style summary ledger */}
       <div className="hidden print:block font-mono text-xs w-full bg-white text-black bg-transparent">
         <div className="text-left mb-2 leading-tight">
-          GARUDA -4 RAUTAHAT<br/>
-          GARUDA<br/>
+          SHREE LAXMI HEALTH CLINIC<br/>
+          Garuda Nagarpalika -5 <br/>
           LEDGER<br/>
           {selectedSupplier.name.toUpperCase()} A/C<br/>
           garuda nagarpalika,shivnagar<br/>
