@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api'
+  // Using an environment variable for local dev if needed, otherwise default to the live production server.
+  baseURL: import.meta.env.VITE_API_URL || 'https://laxmi-health-clinic.onrender.com/api'
 });
 
 // Production: Inject Token Intercept
