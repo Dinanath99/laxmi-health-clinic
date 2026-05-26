@@ -21,6 +21,12 @@ const patientSchema = new mongoose.Schema(
     cvs: { type: String },
     rs: { type: String },
     pa: { type: String },
+    items: [
+      {
+        particular: { type: String },
+        rate: { type: Number },
+      }
+    ],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true },

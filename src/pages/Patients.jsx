@@ -13,6 +13,25 @@ import {
 } from "lucide-react";
 import api from "../api";
 import NepaliDate from "nepali-datetime";
+import { Plus } from "lucide-react";
+
+// Helper function to convert number to words
+function numberToWords(num) {
+  if (!num || num === 0) return "Zero";
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const numStr = num.toString();
+  if (numStr.length > 9) return 'overflow';
+  const n = ('000000000' + numStr).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return '';
+  let str = '';
+  str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+  str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+  str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+  str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+  str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+  return str.trim() + ' Only';
+}
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -43,7 +62,21 @@ export default function Patients() {
     cvs: "",
     rs: "",
     pa: "",
+    items: [{ particular: "", rate: "" }],
   });
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...(formData.items || [])];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const addItemRow = () => {
+    setFormData({
+      ...formData,
+      items: [...(formData.items || []), { particular: "", rate: "" }],
+    });
+  };
 
   useEffect(() => {
     fetchPatients();
@@ -79,6 +112,7 @@ export default function Patients() {
       cvs: "",
       rs: "",
       pa: "",
+      items: [{ particular: "", rate: "" }],
     });
     setEditingId(null);
     setShowModal(false);
@@ -105,6 +139,7 @@ export default function Patients() {
       cvs: p.cvs || "",
       rs: p.rs || "",
       pa: p.pa || "",
+      items: p.items && p.items.length > 0 ? p.items : [{ particular: "", rate: "" }],
     });
     setEditingId(p._id);
     setShowModal(true);
@@ -215,6 +250,11 @@ export default function Patients() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const grandTotal = (formData.items || []).reduce(
+    (sum, item) => sum + (Number(item.rate) || 0),
+    0
+  );
+
   return (
     <div className="w-full relative z-10">
       <div className="print:hidden flex justify-between items-center mb-6">
@@ -240,7 +280,7 @@ export default function Patients() {
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm print:backdrop-blur-none print:static print:bg-transparent print:p-0 print:block print:m-0">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative p-6 md:p-10 print-area print:max-h-none print:shadow-none print:w-full print:max-w-none print:overflow-visible">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative p-6 md:p-10 print-area print:max-h-none print:shadow-none print:w-full print:max-w-none print:overflow-visible print:p-2">
             {/* Modal Actions */}
             <div className="absolute top-4 right-4 flex gap-3 print:hidden">
               <button
@@ -265,7 +305,7 @@ export default function Patients() {
             <form
               onSubmit={handleSubmit}
               onKeyDown={handleKeyDown}
-              className="h-full flex flex-col font-serif text-slate-800"
+              className="h-full print:h-auto flex flex-col font-serif text-slate-800"
             >
               {/* Header section matching image */}
               <div className="flex justify-between items-start text-xs font-bold mb-3 border-b-2 border-red-500 pb-4">
@@ -392,7 +432,7 @@ export default function Patients() {
               <div className="w-full h-1.5 bg-red-500 rounded-sm mb-6 print:hidden hidden"></div>
 
               {/* Invoice Section for Printing */}
-              <div className="mt-4 flex flex-col w-full border-[1.5px] border-slate-800 print:border-black flex-1 min-h-[500px] text-slate-900">
+              <div className="mt-4 flex flex-col w-full border-[1.5px] border-slate-800 print:border-black flex-1 min-h-[400px] print:min-h-[250px] text-slate-900">
                 {/* Table Header */}
                 <div className="flex border-b-[1.5px] border-slate-800 print:border-black font-bold text-center text-sm md:text-base">
                   <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black py-2">
@@ -407,32 +447,88 @@ export default function Patients() {
                   <div className="w-24 md:w-32 py-2">Total</div>
                 </div>
 
-                {/* Empty Rows Space */}
-                <div className="flex-1 flex w-full relative min-h-[400px]">
-                  <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black"></div>
-                  <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black"></div>
-                  <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black"></div>
-                  <div className="w-24 md:w-32"></div>
+                {/* Dynamic Item Rows */}
+                <div className="flex-1 flex flex-col w-full relative min-h-[300px] print:min-h-[200px]">
+                  {(formData.items || []).map((item, index) => (
+                    <div key={index} className="flex border-b-[1.5px] border-slate-800 print:border-black last:border-b-0 min-h-[30px] items-stretch">
+                      <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black px-4 py-2 flex items-center">
+                        <div className="w-full relative">
+                           {/* Print-only dots if empty, ensures dots always show in print if user left it blank */}
+                           {!item.particular && (
+                              <span className="hidden print:block absolute inset-0 overflow-hidden text-black font-bold tracking-[0.2em] pointer-events-none mt-1">
+                                 ........................................................................................................................................
+                              </span>
+                           )}
+                           <input
+                            type="text"
+                            name={`particular-${index}`}
+                            value={item.particular}
+                            onChange={(e) => handleItemChange(index, "particular", e.target.value)}
+                            className="w-full bg-transparent border-b-[2px] border-dotted border-slate-400 focus:border-slate-800 print:border-black focus:outline-none font-semibold pb-1 print:border-none relative z-10"
+                            placeholder="........................................................................"
+                           />
+                        </div>
+                      </div>
+                      <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black px-2 py-2 flex items-end justify-center text-center">
+                        <input
+                          type="number"
+                          value={item.rate || ""}
+                          onChange={(e) => handleItemChange(index, "rate", e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && index === (formData.items?.length || 1) - 1) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              addItemRow();
+                              setTimeout(() => {
+                                const nextInput = document.querySelector(`input[name="particular-${index + 1}"]`);
+                                if (nextInput) nextInput.focus();
+                              }, 50);
+                            }
+                          }}
+                          className="w-full bg-transparent border-b-[2px] border-dotted border-slate-400 focus:border-slate-800 print:border-transparent focus:outline-none text-center font-bold pb-1"
+                          placeholder=".........."
+                        />
+                      </div>
+                      <div className="w-24 md:w-32 px-4 py-1 flex items-center justify-center font-black">
+                        {item.rate ? Number(item.rate).toLocaleString() : ""}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Fills Remaining Space */}
+                  <div className="flex-1 flex">
+                      <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                      <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                      <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                      <div className="w-24 md:w-32 border-t-[1.5px] border-slate-800 print:border-black"></div>
+                  </div>
                 </div>
 
                 {/* Total Row */}
-                <div className="flex border-t-[1.5px] border-slate-800 print:border-black font-bold text-center h-10 items-center">
+                <div className="flex border-t-[1.5px] border-slate-800 print:border-black font-bold text-center h-8 items-center">
                   <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black h-full"></div>
                   <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black h-full text-right pr-4 py-1.5 uppercase font-black">
                     Total
                   </div>
                   <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black h-full"></div>
-                  <div className="w-24 md:w-32 h-full"></div>
+                  <div className="w-24 md:w-32 h-full flex items-center justify-center font-black tabular-nums">
+                    {grandTotal > 0 ? grandTotal.toLocaleString() : ""}
+                  </div>
                 </div>
               </div>
 
               {/* Footer Section */}
-              <div className="mt-4 flex justify-between items-end text-sm md:text-base font-bold pb-2 text-slate-900 mb-8 min-h-[60px]">
+              <div className="mt-4 flex justify-between items-end text-sm md:text-base font-bold pb-2 text-slate-900 mb-4 print:mb-0 min-h-[50px]">
                 <div className="flex items-end gap-2 flex-[2]">
                   <span className="whitespace-nowrap">Amount in words:-</span>
                   <input
                     type="text"
-                    className="w-full max-w-[400px] border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none focus:border-blue-500 rounded-none text-sm text-slate-900 px-2"
+                    value={grandTotal > 0 ? numberToWords(grandTotal) : ""}
+                    readOnly
+                    className="w-full max-w-[400px] border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none rounded-none text-sm text-slate-900 px-2 font-bold cursor-default flex-1 overflow-visible whitespace-normal"
                     placeholder="e.g. Fifty Thousands Only"
                   />
                 </div>
