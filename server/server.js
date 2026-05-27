@@ -35,7 +35,7 @@ const medicineRoutes = require("./routes/medicineRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const billRoutes = require("./routes/billRoutes");
 const ledgerRoutes = require("./routes/ledgerRoutes");
-const seedRoutes = require("./routes/seedRoutes");
+
 const dailyLogRoutes = require("./routes/dailyLogRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const searchRoutes = require("./routes/searchRoutes");
@@ -53,7 +53,7 @@ app.use("/api/bills", billRoutes);
 app.use("/api/ledger", ledgerRoutes);
 app.use("/api/dailylog", dailyLogRoutes);
 app.use("/api/salary", staffRoutes);
-app.use("/api/seed", seedRoutes);
+
 app.use("/api/search", searchRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/trash", trashRoutes);

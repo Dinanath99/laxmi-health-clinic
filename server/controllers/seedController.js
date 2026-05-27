@@ -10,11 +10,11 @@ exports.seedDatabase = async (req, res) => {
     await Bill.deleteMany({});
     
     const salt = await bcrypt.genSalt(10);
-    const adminHash = await bcrypt.hash('Admin@123', salt);
+    const adminHash = await bcrypt.hash('Laxmi@2083', salt);
     const userHash = await bcrypt.hash('Staff@123', salt);
     
-    const admin = await User.create({ name: 'Admin User', email: 'admin@pharmacy.com', password: adminHash, role: 'admin' });
-    const staff = await User.create({ name: 'Staff User', email: 'staff@pharmacy.com', password: userHash, role: 'user' });
+    const admin = await User.create({ name: 'Admin User', email: 'laxmi@healthclinic.com', password: adminHash, role: 'admin' });
+    const staff = await User.create({ name: 'Staff User', email: 'staff@healthclinic.com', password: userHash, role: 'user' });
     
     const s1 = await Supplier.create({ name: 'Deurali Janta', address: 'Kathmandu', phone: '9840000000', email: 'info@djpl.com' });
     const s2 = await Supplier.create({ name: 'Nepal Pharmaceuticals', address: 'Birgunj', phone: '9850000000' });
