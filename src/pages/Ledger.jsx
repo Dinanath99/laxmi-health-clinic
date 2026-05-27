@@ -563,8 +563,8 @@ export default function Ledger() {
       {/* Print View: Dot Matrix Style summary ledger */}
       <div className="hidden print:block font-mono text-xs w-full bg-white text-black bg-transparent">
         <div className="text-left mb-2 leading-tight">
-          GARUDA -4 RAUTAHAT<br/>
-          GARUDA<br/>
+          Laxmi Health Clinic<br/>
+          Shivnagar<br/>
           LEDGER<br/>
           {activeLedger.toUpperCase()} A/C<br/>
           garuda nagarpalika,shivnagar<br/>
@@ -581,7 +581,7 @@ export default function Ledger() {
         {[...txs].reverse().map((tx) => (
           <div key={tx._id} className="flex py-0.5 whitespace-pre">
             <div className="w-[15%]">{tx.date.split("T")[0]}</div>
-            <div className="w-[45%] truncate">{tx.openingBalance !== null ? "Opening Balance..B/F" : (tx.particulars || "To SALES BILL")}</div>
+            <div className="w-[45%] truncate">{tx.particulars || "To SALES BILL"}</div>
             <div className="w-[15%] text-right pr-4">{tx.amountDR > 0 ? tx.amountDR.toFixed(2) : ''}</div>
             <div className="w-[15%] text-right pr-4">{tx.amountCR > 0 ? tx.amountCR.toFixed(2) : ''}</div>
             <div className="w-[10%] text-right">{tx.balance.toFixed(2)} Dr</div>
