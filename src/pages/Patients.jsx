@@ -18,19 +18,69 @@ import { Plus } from "lucide-react";
 // Helper function to convert number to words
 function numberToWords(num) {
   if (!num || num === 0) return "Zero";
-  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
-  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const a = [
+    "",
+    "One ",
+    "Two ",
+    "Three ",
+    "Four ",
+    "Five ",
+    "Six ",
+    "Seven ",
+    "Eight ",
+    "Nine ",
+    "Ten ",
+    "Eleven ",
+    "Twelve ",
+    "Thirteen ",
+    "Fourteen ",
+    "Fifteen ",
+    "Sixteen ",
+    "Seventeen ",
+    "Eighteen ",
+    "Nineteen ",
+  ];
+  const b = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
   const numStr = num.toString();
-  if (numStr.length > 9) return 'overflow';
-  const n = ('000000000' + numStr).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-  if (!n) return '';
-  let str = '';
-  str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
-  str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
-  str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
-  str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
-  str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
-  return str.trim() + ' Only';
+  if (numStr.length > 9) return "overflow";
+  const n = ("000000000" + numStr)
+    .substr(-9)
+    .match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return "";
+  let str = "";
+  str +=
+    n[1] != 0
+      ? (a[Number(n[1])] || b[n[1][0]] + " " + a[n[1][1]]) + "Crore "
+      : "";
+  str +=
+    n[2] != 0
+      ? (a[Number(n[2])] || b[n[2][0]] + " " + a[n[2][1]]) + "Lakh "
+      : "";
+  str +=
+    n[3] != 0
+      ? (a[Number(n[3])] || b[n[3][0]] + " " + a[n[3][1]]) + "Thousand "
+      : "";
+  str +=
+    n[4] != 0
+      ? (a[Number(n[4])] || b[n[4][0]] + " " + a[n[4][1]]) + "Hundred "
+      : "";
+  str +=
+    n[5] != 0
+      ? (str != "" ? "and " : "") +
+        (a[Number(n[5])] || b[n[5][0]] + " " + a[n[5][1]])
+      : "";
+  return str.trim() + " Only";
 }
 
 export default function Patients() {
@@ -139,7 +189,10 @@ export default function Patients() {
       cvs: p.cvs || "",
       rs: p.rs || "",
       pa: p.pa || "",
-      items: p.items && p.items.length > 0 ? p.items : [{ particular: "", rate: "" }],
+      items:
+        p.items && p.items.length > 0
+          ? p.items
+          : [{ particular: "", rate: "" }],
     });
     setEditingId(p._id);
     setShowModal(true);
@@ -252,7 +305,7 @@ export default function Patients() {
 
   const grandTotal = (formData.items || []).reduce(
     (sum, item) => sum + (Number(item.rate) || 0),
-    0
+    0,
   );
 
   return (
@@ -447,63 +500,100 @@ export default function Patients() {
                   <div className="w-24 md:w-32 py-2">Total</div>
                 </div>
 
-                {/* Dynamic Item Rows */}
+                 {/* Dynamic Item Rows */}
                 <div className="flex-1 flex flex-col w-full relative min-h-[300px] print:min-h-[200px]">
-                  {(formData.items || []).map((item, index) => (
-                    <div key={index} className="flex border-b-[1.5px] border-slate-800 print:border-black last:border-b-0 min-h-[30px] items-stretch">
+                  {(formData.items || []).map((item, index) => {
+                    const isRowEmpty = !item.particular && !item.rate;
+                    return (
+                    <div
+                      key={index}
+                      className={`flex border-b-[1.5px] border-slate-800 print:border-black last:border-b-0 min-h-[30px] items-stretch ${isRowEmpty && index > 0 ? "print:hidden" : ""}`}
+                    >
                       <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black flex items-center justify-center font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black px-4 py-2 flex items-center">
                         <div className="w-full relative">
-                           {/* Print-only dots if empty, ensures dots always show in print if user left it blank */}
-                           {!item.particular && (
-                              <span className="hidden print:block absolute inset-0 overflow-hidden text-black font-bold tracking-[0.2em] pointer-events-none mt-1">
-                                 ........................................................................................................................................
-                              </span>
-                           )}
-                           <input
+                          <input
                             type="text"
                             name={`particular-${index}`}
                             value={item.particular}
-                            onChange={(e) => handleItemChange(index, "particular", e.target.value)}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "particular",
+                                e.target.value,
+                              )
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const target = document.querySelector(`input[name="rate-${index}"]`);
+                                if (target) target.focus();
+                              } else if (e.key === "Backspace" && !item.particular && index > 0) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!item.rate) {
+                                  const newItems = [...(formData.items || [])];
+                                  newItems.splice(index, 1);
+                                  setFormData({ ...formData, items: newItems });
+                                }
+                                setTimeout(() => {
+                                  const prev = document.querySelector(`input[name="rate-${index - 1}"]`);
+                                  if (prev) prev.focus();
+                                }, 50);
+                              }
+                            }}
                             className="w-full bg-transparent border-b-[2px] border-dotted border-slate-400 focus:border-slate-800 print:border-black focus:outline-none font-semibold pb-1 print:border-none relative z-10"
-                            placeholder="........................................................................"
-                           />
+                            placeholder=""
+                          />
                         </div>
                       </div>
                       <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black px-2 py-2 flex items-end justify-center text-center">
                         <input
                           type="number"
+                          name={`rate-${index}`}
                           value={item.rate || ""}
-                          onChange={(e) => handleItemChange(index, "rate", e.target.value)}
+                          onChange={(e) =>
+                            handleItemChange(index, "rate", e.target.value)
+                          }
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" && index === (formData.items?.length || 1) - 1) {
+                            if (e.key === "Enter") {
                               e.preventDefault();
                               e.stopPropagation();
-                              addItemRow();
+                              if (index === (formData.items?.length || 1) - 1) {
+                                addItemRow();
+                              }
                               setTimeout(() => {
-                                const nextInput = document.querySelector(`input[name="particular-${index + 1}"]`);
+                                const nextInput = document.querySelector(
+                                  `input[name="particular-${index + 1}"]`,
+                                );
                                 if (nextInput) nextInput.focus();
                               }, 50);
+                            } else if (e.key === "Backspace" && !item.rate) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const prev = document.querySelector(`input[name="particular-${index}"]`);
+                              if (prev) prev.focus();
                             }
                           }}
                           className="w-full bg-transparent border-b-[2px] border-dotted border-slate-400 focus:border-slate-800 print:border-transparent focus:outline-none text-center font-bold pb-1"
-                          placeholder=".........."
+                          placeholder=""
                         />
                       </div>
                       <div className="w-24 md:w-32 px-4 py-1 flex items-center justify-center font-black">
                         {item.rate ? Number(item.rate).toLocaleString() : ""}
                       </div>
                     </div>
-                  ))}
+                  )})}
 
                   {/* Fills Remaining Space */}
                   <div className="flex-1 flex">
-                      <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
-                      <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
-                      <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
-                      <div className="w-24 md:w-32 border-t-[1.5px] border-slate-800 print:border-black"></div>
+                    <div className="w-12 md:w-16 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                    <div className="flex-1 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                    <div className="w-24 md:w-32 border-r-[1.5px] border-slate-800 print:border-black border-t-[1.5px]"></div>
+                    <div className="w-24 md:w-32 border-t-[1.5px] border-slate-800 print:border-black"></div>
                   </div>
                 </div>
 
@@ -522,21 +612,29 @@ export default function Patients() {
 
               {/* Footer Section */}
               <div className="mt-4 flex justify-between items-end text-sm md:text-base font-bold pb-2 text-slate-900 mb-4 print:mb-0 min-h-[50px]">
-                <div className="flex items-end gap-2 flex-[2]">
-                  <span className="whitespace-nowrap">Amount in words:-</span>
-                  <input
-                    type="text"
-                    value={grandTotal > 0 ? numberToWords(grandTotal) : ""}
-                    readOnly
-                    className="w-full max-w-[400px] border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none rounded-none text-sm text-slate-900 px-2 font-bold cursor-default flex-1 overflow-visible whitespace-normal"
-                    placeholder="e.g. Fifty Thousands Only"
-                  />
+                <div className="flex items-start gap-2 flex-[2]">
+                  <span className="whitespace-nowrap shrink-0 mt-0.5">Amount in words:-</span>
+                  <div className="relative w-full max-w-[400px] min-h-[48px]">
+                    {/* Visual Printed Lines */}
+                    <div className="absolute inset-0 flex flex-col justify-start pointer-events-none w-full z-0">
+                       <div className="h-6 w-full border-b-[1.5px] border-dotted border-slate-800 print:border-black"></div>
+                       <div className="h-6 w-full border-b-[1.5px] border-dotted border-slate-800 print:border-black"></div>
+                    </div>
+                    {/* Form Input Overlay */}
+                    <textarea
+                      value={grandTotal > 0 ? numberToWords(grandTotal) : ""}
+                      readOnly
+                      rows={2}
+                      className="relative z-10 w-full h-full bg-transparent border-none focus:outline-none focus:ring-0 rounded-none text-[13px] md:text-sm text-slate-900 px-2 font-bold cursor-default resize-none leading-6"
+                      placeholder=""
+                    />
+                  </div>
                 </div>
-                <div className="flex items-end gap-2 flex-1 justify-end mt-8 sm:mt-0">
+                <div className="flex items-end gap-2 flex-1 justify-end sm:mt-0 ml-4 pb-2">
                   <span className="whitespace-nowrap"> Sign:</span>
                   <input
                     type="text"
-                    className="w-40 border-b-[1.5px] border-dotted border-slate-800 print:border-black mb-1 h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none focus:border-blue-500 rounded-none text-sm text-center text-slate-900"
+                    className="w-40 border-b-[1.5px] border-dotted border-slate-800 print:border-black h-6 bg-transparent border-t-0 border-l-0 border-r-0 focus:outline-none focus:border-blue-500 rounded-none text-sm text-center text-slate-900 leading-6"
                     placeholder=""
                   />
                 </div>
